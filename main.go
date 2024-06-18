@@ -11,15 +11,14 @@ var COLOR_DISTINCT int = 0
 func main() {
 	// put your sudoku board in here
 	board := [][]int{
-		{1, 1, 1, 3, 3, 3, 3, 3, 3},
-		{1, 6, 6, 6, 6, 5, 5, 5, 3},
-		{1, 7, 6, 8, 8, 8, 5, 5, 3},
-		{1, 7, 8, 8, 8, 8, 8, 4, 3},
-		{1, 7, 8, 8, 0, 8, 8, 4, 3},
-		{1, 7, 8, 8, 8, 8, 8, 4, 3},
-		{2, 7, 7, 8, 8, 8, 4, 4, 3},
-		{2, 4, 4, 4, 4, 4, 4, 4, 3},
-		{2, 2, 3, 3, 3, 3, 3, 3, 3},
+		{0, 1, 1, 2, 3, 0, 0, 0},
+		{0, 1, 1, 2, 3, 0, 0, 0},
+		{0, 4, 4, 4, 3, 0, 0, 0},
+		{0, 4, 4, 4, 3, 0, 5, 5},
+		{0, 0, 0, 0, 0, 0, 5, 5},
+		{0, 0, 0, 0, 0, 0, 5, 5},
+		{0, 0, 0, 0, 0, 0, 6, 6},
+		{7, 7, 7, 7, 7, 7, 6, 6},
 	}
 
 	for _, row := range board {
@@ -32,9 +31,9 @@ func main() {
 
 	COLOR_DISTINCT++
 
-	solution := make([][]rune, 9)
+	solution := make([][]rune, COLOR_DISTINCT)
 	for i := range solution {
-		solution[i] = make([]rune, 9)
+		solution[i] = make([]rune, COLOR_DISTINCT)
 	}
 
 	for i, row := range board {
@@ -45,9 +44,9 @@ func main() {
 
 	firstColorTiles := findColor(board, solution)
 
-	currState := make([][]rune, 9)
+	currState := make([][]rune, COLOR_DISTINCT)
 	for i := range currState {
-		currState[i] = make([]rune, 9)
+		currState[i] = make([]rune, COLOR_DISTINCT)
 	}
 	moveState(&solution, &currState)
 	for _, tile := range firstColorTiles {
@@ -69,9 +68,9 @@ func main() {
 }
 
 func proccess(board [][]int, solution *[][]rune) bool {
-	currState := make([][]rune, 9)
+	currState := make([][]rune, COLOR_DISTINCT)
 	for i := range currState {
-		currState[i] = make([]rune, 9)
+		currState[i] = make([]rune, COLOR_DISTINCT)
 	}
 	moveState(solution, &currState)
 	firstColorTiles := findColor(board, *solution)
@@ -141,26 +140,27 @@ func findColor(board [][]int, solution [][]rune) [][]int {
 
 func toString(solution [][]rune) string {
 	sb := strings.Builder{}
+	limit := COLOR_DISTINCT * 2 + 1
 	for i := 1; i <= 2; i++ {
-		for j := 0; j < 19; j++ {
+		for j := 0; j < limit; j++ {
 			sb.WriteString("-")
 		}
 		sb.WriteString("\n")
 	}
 
-	for i := 0; i < 9; i++ {
+	for i := 0; i < COLOR_DISTINCT; i++ {
 		sb.WriteString("|")
-		for j := 0; j < 9; j++ {
+		for j := 0; j < COLOR_DISTINCT; j++ {
 			sb.WriteString(fmt.Sprintf("%c|", solution[i][j]))
 		}
 		sb.WriteString("\n")
-		for j := 0; j < 19; j++ {
+		for j := 0; j < limit; j++ {
 			sb.WriteString("-")
 		}
 		sb.WriteString("\n")
 	}
 
-	for j := 0; j < 19; j++ {
+	for j := 0; j < limit; j++ {
 		sb.WriteString("-")
 	}
 
@@ -208,27 +208,29 @@ func markSameColor(board [][]int, solution *[][]rune, color int) {
 }
 
 func markDiagonal(solution *[][]rune, i int, j int) {
+	limitLen := COLOR_DISTINCT - 1
+
 	if i > 0 && j > 0 {
 		(*solution)[i-1][j-1] = 'x'
 	}
-	if i < 8 && j < 8 {
+	if i < limitLen && j < limitLen {
 		(*solution)[i+1][j+1] = 'x'
 	}
-	if i > 0 && j < 8 {
+	if i > 0 && j < limitLen {
 		(*solution)[i-1][j+1] = 'x'
 	}
-	if i < 8 && j > 0 {
+	if i < limitLen && j > 0 {
 		(*solution)[i+1][j-1] = 'x'
 	}
 }
 
 func markLine(solution *[][]rune, i int, j int) {
-	for k := 0; k < 9; k++ {
+	for k := 0; k < COLOR_DISTINCT; k++ {
 		if k != i {
 			(*solution)[k][j] = 'x'
 		}
 	}
-	for k := 0; k < 9; k++ {
+	for k := 0; k < COLOR_DISTINCT; k++ {
 		if k != j {
 			(*solution)[i][k] = 'x'
 		}
@@ -240,12 +242,12 @@ func isEligible(solution *[][]rune, i int, j int) bool {
 		return false
 	}
 
-	for k := 0; k < 9; k++ {
+	for k := 0; k < COLOR_DISTINCT; k++ {
 		if k != i && (*solution)[k][j] == 'q' {
 			return false
 		}
 	}
-	for k := 0; k < 9; k++ {
+	for k := 0; k < COLOR_DISTINCT; k++ {
 		if k != j && (*solution)[i][k] == 'q' {
 			return false
 		}
@@ -254,13 +256,13 @@ func isEligible(solution *[][]rune, i int, j int) bool {
 	if i > 0 && j > 0 && (*solution)[i-1][j-1] == 'q' {
 		return false
 	}
-	if i < 8 && j < 8 && (*solution)[i+1][j+1] == 'q' {
+	if i < COLOR_DISTINCT - 1 && j < COLOR_DISTINCT - 1 && (*solution)[i+1][j+1] == 'q' {
 		return false
 	}
-	if i > 0 && j < 8 && (*solution)[i-1][j+1] == 'q' {
+	if i > 0 && j < COLOR_DISTINCT - 1 && (*solution)[i-1][j+1] == 'q' {
 		return false
 	}
-	if i < 8 && j > 0 && (*solution)[i+1][j-1] == 'q' {
+	if i < COLOR_DISTINCT - 1 && j > 0 && (*solution)[i+1][j-1] == 'q' {
 		return false
 	}
 
